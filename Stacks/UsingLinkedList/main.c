@@ -10,9 +10,12 @@ struct node{
 struct node* top = NULL;
 
 void push(int y){
+    //to make a stack we must always insertAtHead
     struct node* temp;
     temp = (struct node*) malloc (sizeof(struct node));
+    
     if (!temp) {
+        //will give error if heap is full
         printf("Stack overflow");
     }
     temp->d = y;
@@ -29,7 +32,7 @@ void pop(){
     //assign top to temp
     temp=top;
     top = top->next;
-    //delete(temp);
+    free(temp);
 }
 bool isEmpty(){
     return top == NULL;
@@ -44,9 +47,14 @@ int peek(){
 void display(){
     struct node* temp;
     temp = top;
-    while(temp!=NULL){
+    if(temp == NULL){
+        printf("List empty!");
+    }else{
+        while(temp->next!=NULL){
         printf("%d->", temp->d);
         temp=temp->next;
+        }
+    printf("%d", temp->d);
     }
 }
 
@@ -57,8 +65,8 @@ void main(){
         printf("2- Pop\n");
         printf("3- Display\n");
         printf("4- Check if its empty or not\n");
-        printf("5- Top element od stack is: ");
-        printf("4- Exit\n");
+        printf("5- Top of stack: ");
+        printf("6- Exit\n");
         printf("Aapko kya karna hai??\n");
         scanf("%d", &input);
 
