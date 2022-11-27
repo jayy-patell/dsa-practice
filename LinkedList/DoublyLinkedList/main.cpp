@@ -45,7 +45,7 @@ int getLength(Node* head){
 }
 
 void insertAtHead(Node* &tail, Node* &head, int d){
-    if(tail == NULL){
+    if(head == NULL){
         //inserting first element in the list
         Node* temp = new Node(d);
         tail = temp;
