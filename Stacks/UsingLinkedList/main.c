@@ -51,8 +51,8 @@ void display(){
         printf("List empty!");
     }else{
         while(temp->next!=NULL){
-        printf("%d->", temp->d);
-        temp=temp->next;
+            printf("%d->", temp->d);
+            temp=temp->next;
         }
     printf("%d", temp->d);
     }
