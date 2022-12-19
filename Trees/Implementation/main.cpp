@@ -123,6 +123,13 @@ void buildFromLevelOrder(Node* &root) {
     }
  }
 
+int height (Node* root)
+{
+if(root==NULL)
+return 0;
+return( 1+ max(height (root->left), height(root->right)));
+}
+
 
 int main(){
     
@@ -132,6 +139,11 @@ int main(){
 
     cout<<"printing the output of LevelOrderTraversal"<<endl;
     levelOrderTraversal(root);
+
+    int h = height(root);
+    cout<<"Height is: "<<h<<endl;
+    
+    
 
     
     // node* root = NULL;
