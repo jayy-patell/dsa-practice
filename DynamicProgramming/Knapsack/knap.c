@@ -27,10 +27,10 @@ void KnapSack(int **KS, int n, int w, int *Value, int *Weight){
             }
          }
 
-         j=w;
+         j=w;   //start from the last cell and see if equal to the previous cell
          for(int i=n; i>0; i--){
             if(KS[i][j] != KS[i-1][j]){
-                cost =+ Value[i];
+                cost += Value[i];
                 subset[l++] = i;
                 j = j-Weight[i];
             }
