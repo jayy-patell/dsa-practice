@@ -40,7 +40,7 @@ public:
         {
             if (!vis[i])
             {
-                if (dfsCheck(i, adj, vis, pathVis) == true)
+                if (dfsCheck(i, adj, vis, pathVis))
                     return true;
             }
         }
