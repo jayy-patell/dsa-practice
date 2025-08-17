@@ -1,10 +1,10 @@
 <!-- src/App.vue -->
 <template>
-  <div id="app" class="min-h-screen bg-gray-50">
-    <BaseHeader />
-    <div class="flex">
-      <BaseSidebar />
-      <main class="flex-1 p-6">
+  <div id="app" class="app">
+    <AppHeader />
+    <div class="app-layout">
+      <AppSidebar />
+      <main class="main-content">
         <RouterView />
       </main>
     </div>
@@ -12,466 +12,483 @@
 </template>
 
 <script setup lang="ts">
-import BaseHeader from '@/components/common/BaseHeader.vue'
-import BaseSidebar from '@/components/common/BaseSidebar.vue'
+import AppHeader from '@/components/common/AppHeader.vue'
+import AppSidebar from '@/components/common/AppSidebar.vue'
 </script>
 
-<!-- src/components/upload/FileUpload.vue -->
+<style lang="scss">
+@import '@/styles/variables.scss';
+@import '@/styles/global.scss';
+
+.app {
+  min-height: 100vh;
+  background: $background-primary;
+}
+
+.app-layout {
+  display: flex;
+  min-height: calc(100vh - 70px); // Subtract header height
+}
+
+.main-content {
+  flex: 1;
+  overflow-x: auto;
+}
+</style>
+
+<!-- src/components/common/AppHeader.vue -->
 <template>
-  <div class="bg-white rounded-lg shadow-md p-6">
-    <h2 class="text-2xl font-bold mb-6">Upload Hospital Data</h2>
+  <header class="app-header">
+    <div class="header-content">
+      <div class="header-brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1 class="brand-title">Infusion Analytics</h1>
+          <p class="brand-subtitle">Customer Data Platform</p>
+        </div>
+      </div>
+      
+      <nav class="header-nav">
+        <router-link to="/" class="nav-link" :class="{ active: $route.path === '/' }">
+          Dashboard
+        </router-link>
+        <router-link to="/upload" class="nav-link" :class="{ active: $route.path === '/upload' }">
+          Upload
+        </router-link>
+        <router-link to="/analytics" class="nav-link" :class="{ active: $route.path === '/analytics' }">
+          Analytics
+        </router-link>
+        <router-link to="/reports" class="nav-link" :class="{ active: $route.path === '/reports' }">
+          Reports
+        </router-link>
+      </nav>
+      
+      <div class="header-actions">
+        <button class="btn btn--secondary btn--small">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+        </button>
+        <div class="user-menu">
+          <div class="user-avatar">
+            <span>A</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+</template>
+
+<script setup lang="ts">
+// Header logic here
+</script>
+
+<style lang="scss" scoped>
+.app-header {
+  height: 70px;
+  background: $background-card;
+  border-bottom: 1px solid $border-color;
+  box-shadow: $shadow-light;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  padding: 0 $spacing-xl;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  
+  .brand-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, $primary-blue, $secondary-blue);
+    border-radius: $border-radius-md;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
     
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <!-- Alarms Upload -->
-      <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-        <div class="mb-4">
-          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-          </svg>
-        </div>
-        <h3 class="text-lg font-medium mb-2">Hospital Alarms</h3>
-        <input
-          ref="alarmsInput"
-          type="file"
-          accept=".xlsx,.xls"
-          @change="(e) => handleFileSelect(e, 'alarms')"
-          class="hidden"
-        />
-        <button
-          @click="$refs.alarmsInput?.click()"
-          :disabled="uploading"
-          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Choose File
-        </button>
-        <p v-if="files.alarms" class="mt-2 text-sm text-gray-600">
-          {{ files.alarms.name }}
-        </p>
-      </div>
-
-      <!-- Enterprise Units Upload -->
-      <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-        <div class="mb-4">
-          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-          </svg>
-        </div>
-        <h3 class="text-lg font-medium mb-2">Enterprise Units</h3>
-        <input
-          ref="enterpriseInput"
-          type="file"
-          accept=".xlsx,.xls"
-          @change="(e) => handleFileSelect(e, 'enterprise')"
-          class="hidden"
-        />
-        <button
-          @click="$refs.enterpriseInput?.click()"
-          :disabled="uploading"
-          class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Choose File
-        </button>
-        <p v-if="files.enterprise" class="mt-2 text-sm text-gray-600">
-          {{ files.enterprise.name }}
-        </p>
-      </div>
-
-      <!-- Rate Changes Upload -->
-      <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-        <div class="mb-4">
-          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-          </svg>
-        </div>
-        <h3 class="text-lg font-medium mb-2">Rate Changes</h3>
-        <input
-          ref="rateChangesInput"
-          type="file"
-          accept=".xlsx,.xls"
-          @change="(e) => handleFileSelect(e, 'rateChanges')"
-          class="hidden"
-        />
-        <button
-          @click="$refs.rateChangesInput?.click()"
-          :disabled="uploading"
-          class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Choose File
-        </button>
-        <p v-if="files.rateChanges" class="mt-2 text-sm text-gray-600">
-          {{ files.rateChanges.name }}
-        </p>
-      </div>
-    </div>
-
-    <!-- Upload Button -->
-    <div class="mt-6 text-center">
-      <button
-        @click="uploadFiles"
-        :disabled="uploading || !hasFiles"
-        class="bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-bold py-3 px-6 rounded-lg"
-      >
-        <span v-if="uploading">Uploading...</span>
-        <span v-else>Upload Files</span>
-      </button>
-    </div>
-
-    <!-- Progress Bar -->
-    <div v-if="uploading" class="mt-4">
-      <div class="bg-gray-200 rounded-full h-2">
-        <div
-          class="bg-blue-600 h-2 rounded-full transition-all duration-300"
-          :style="{ width: `${progress}%` }"
-        ></div>
-      </div>
-      <p class="text-center mt-2 text-sm text-gray-600">{{ progress }}%</p>
-    </div>
-
-    <!-- Results -->
-    <div v-if="results.length > 0" class="mt-6">
-      <h3 class="text-lg font-semibold mb-4">Upload Results</h3>
-      <div class="space-y-4">
-        <div
-          v-for="result in results"
-          :key="result.filename"
-          class="border rounded-lg p-4"
-          :class="{
-            'border-green-300 bg-green-50': result.success,
-            'border-red-300 bg-red-50': !result.success
-          }"
-        >
-          <div class="flex items-center justify-between">
-            <h4 class="font-medium">{{ result.filename }}</h4>
-            <span
-              class="px-2 py-1 rounded text-xs"
-              :class="{
-                'bg-green-100 text-green-800': result.success,
-                'bg-red-100 text-red-800': !result.success
-              }"
-            >
-              {{ result.success ? 'Success' : 'Failed' }}
-            </span>
-          </div>
-          <div v-if="result.success" class="mt-2 text-sm text-gray-600">
-            Processed: {{ result.processed_count }} / {{ result.total_rows }} rows
-          </div>
-          <div v-if="result.errors && result.errors.length > 0" class="mt-2">
-            <details class="text-sm">
-              <summary class="cursor-pointer text-red-600">View Errors ({{ result.errors.length }})</summary>
-              <ul class="mt-2 list-disc list-inside text-red-600">
-                <li v-for="error in result.errors" :key="error">{{ error }}</li>
-              </ul>
-            </details>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
-<script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useFileUpload } from '@/composables/useFileUpload'
-
-const { uploading, progress, results, uploadFile, reset } = useFileUpload()
-
-const files = ref<{
-  alarms?: File
-  enterprise?: File
-  rateChanges?: File
-}>({})
-
-const hasFiles = computed(() => {
-  return !!(files.value.alarms || files.value.enterprise || files.value.rateChanges)
-})
-
-const handleFileSelect = (event: Event, type: string) => {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
-  if (file) {
-    files.value = { ...files.value, [type]: file }
-  }
-}
-
-const uploadFiles = async () => {
-  reset()
-  
-  const uploads = []
-  
-  if (files.value.alarms) {
-    uploads.push(uploadFile(files.value.alarms, 'alarms'))
+    svg {
+      width: 24px;
+      height: 24px;
+    }
   }
   
-  if (files.value.enterprise) {
-    uploads.push(uploadFile(files.value.enterprise, 'enterprise-units'))
-  }
-  
-  if (files.value.rateChanges) {
-    uploads.push(uploadFile(files.value.rateChanges, 'rate-changes'))
-  }
-  
-  await Promise.all(uploads)
-}
-</script>
-
-<!-- src/components/dashboard/FilterPanel.vue -->
-<template>
-  <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-    <h3 class="text-lg font-semibold mb-4">Filters</h3>
+  .brand-text {
+    .brand-title {
+      font-size: $font-size-lg;
+      font-weight: $font-weight-bold;
+      color: $text-primary;
+      margin: 0;
+      line-height: 1.2;
+    }
     
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      <!-- Hospital Filter -->
-      <div>
-        <label for="hospital" class="block text-sm font-medium text-gray-700 mb-1">
-          Hospital
-        </label>
-        <select
-          id="hospital"
-          v-model="localFilters.hospitalId"
-          @change="updateFilters"
-          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">All Hospitals</option>
-          <option
-            v-for="hospital in hospitals"
-            :key="hospital.id"
-            :value="hospital.id"
-          >
-            {{ hospital.customer_name }}
-          </option>
-        </select>
-      </div>
-
-      <!-- Enterprise Filter -->
-      <div>
-        <label for="enterprise" class="block text-sm font-medium text-gray-700 mb-1">
-          Enterprise
-        </label>
-        <select
-          id="enterprise"
-          v-model="localFilters.enterpriseId"
-          @change="updateFilters"
-          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">All Enterprises</option>
-          <option
-            v-for="enterprise in enterprises"
-            :key="enterprise.id"
-            :value="enterprise.id"
-          >
-            {{ enterprise.enterprise_name }}
-          </option>
-        </select>
-      </div>
-
-      <!-- Start Date Filter -->
-      <div>
-        <label for="startDate" class="block text-sm font-medium text-gray-700 mb-1">
-          Start Date
-        </label>
-        <input
-          id="startDate"
-          v-model="localFilters.startDate"
-          type="date"
-          @change="updateFilters"
-          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
-
-      <!-- End Date Filter -->
-      <div>
-        <label for="endDate" class="block text-sm font-medium text-gray-700 mb-1">
-          End Date
-        </label>
-        <input
-          id="endDate"
-          v-model="localFilters.endDate"
-          type="date"
-          @change="updateFilters"
-          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
-    </div>
-
-    <!-- Clear Filters Button -->
-    <div class="mt-4">
-      <button
-        @click="clearFilters"
-        class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
-      >
-        Clear Filters
-      </button>
-    </div>
-  </div>
-</template>
-
-<script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useAnalyticsStore } from '@/stores/analytics'
-import type { AnalyticsFilter } from '@/types/analytics'
-
-const analyticsStore = useAnalyticsStore()
-const { hospitals, enterprises, filters } = storeToRefs(analyticsStore)
-
-const localFilters = ref<AnalyticsFilter>({ ...filters.value })
-
-const updateFilters = () => {
-  analyticsStore.updateFilters(localFilters.value)
+    .brand-subtitle {
+      font-size: $font-size-xs;
+      color: $text-secondary;
+      margin: 0;
+      line-height: 1;
+    }
+  }
 }
 
-const clearFilters = () => {
-  localFilters.value = {}
-  analyticsStore.updateFilters({})
-}
-
-onMounted(() => {
-  analyticsStore.fetchHospitals()
-  analyticsStore.fetchEnterprises()
-})
-</script>
-
-<!-- src/components/charts/RateChangeChart.vue -->
-<template>
-  <div class="bg-white rounded-lg shadow-md p-6">
-    <h3 class="text-lg font-semibold mb-4">Rate Changes Over Time</h3>
-    <div class="relative h-64">
-      <canvas ref="chartCanvas"></canvas>
-    </div>
-  </div>
-</template>
-
-<script setup lang="ts">
-import { ref, onMounted, watch, nextTick } from 'vue'
-import { Chart, registerables } from 'chart.js'
-import { useAnalyticsStore } from '@/stores/analytics'
-import { format } from 'date-fns'
-
-Chart.register(...registerables)
-
-const chartCanvas = ref<HTMLCanvasElement>()
-let chartInstance: Chart | null = null
-
-const analyticsStore = useAnalyticsStore()
-const { filteredRateChanges } = storeToRefs(analyticsStore)
-
-const createChart = () => {
-  if (!chartCanvas.value) return
-
-  const ctx = chartCanvas.value.getContext('2d')
-  if (!ctx) return
-
-  // Process data for chart
-  const processedData = processChartData()
-
-  chartInstance = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: processedData.labels,
-      datasets: [{
-        label: 'Average % Increase',
-        data: processedData.data,
-        borderColor: 'rgb(59, 130, 246)',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        tension: 0.1,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        y: {
-          beginAtZero: true,
-          title: {
-            display: true,
-            text: 'Percentage Increase (%)'
-          }
-        },
-        x: {
-          title: {
-            display: true,
-            text: 'Date'
-          }
-        }
-      },
-      plugins: {
-        tooltip: {
-          mode: 'index',
-          intersect: false,
-        },
-        legend: {
-          display: true,
-        }
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: $spacing-lg;
+  
+  .nav-link {
+    padding: $spacing-sm $spacing-md;
+    border-radius: $border-radius-md;
+    text-decoration: none;
+    color: $text-secondary;
+    font-weight: $font-weight-medium;
+    font-size: $font-size-sm;
+    transition: all 0.2s ease;
+    position: relative;
+    
+    &:hover {
+      color: $primary-blue;
+      background: $light-blue;
+    }
+    
+    &.active {
+      color: $primary-blue;
+      background: $light-blue;
+      
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 20px;
+        height: 2px;
+        background: $primary-blue;
+        border-radius: 1px;
       }
     }
-  })
-}
-
-const processChartData = () => {
-  const groupedData = new Map<string, number[]>()
-  
-  filteredRateChanges.value.forEach(change => {
-    const date = format(new Date(change.infusion_date_time), 'yyyy-MM-dd')
-    if (!groupedData.has(date)) {
-      groupedData.set(date, [])
-    }
-    groupedData.get(date)!.push(change.percentincrease || 0)
-  })
-
-  const labels = Array.from(groupedData.keys()).sort()
-  const data = labels.map(date => {
-    const values = groupedData.get(date)!
-    return values.reduce((sum, val) => sum + val, 0) / values.length
-  })
-
-  return { labels, data }
-}
-
-const updateChart = () => {
-  if (chartInstance) {
-    chartInstance.destroy()
   }
-  nextTick(() => {
-    createChart()
-  })
 }
 
-watch(filteredRateChanges, updateChart, { deep: true })
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  
+  .btn--small {
+    padding: $spacing-sm;
+    
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+  
+  .user-menu {
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, $accent-purple, darken($accent-purple, 10%));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: $font-weight-bold;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+      
+      &:hover {
+        transform: scale(1.05);
+      }
+    }
+  }
+}
 
-onMounted(() => {
-  createChart()
-})
+@media (max-width: 768px) {
+  .header-content {
+    padding: 0 $spacing-lg;
+  }
+  
+  .header-nav {
+    display: none;
+  }
+  
+  .brand-text .brand-subtitle {
+    display: none;
+  }
+}
+</style>
+
+<!-- src/components/common/AppSidebar.vue -->
+<template>
+  <aside class="app-sidebar" :class="{ 'sidebar-collapsed': collapsed }">
+    <div class="sidebar-header">
+      <button @click="toggleCollapsed" class="collapse-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 12h18m-9-9l9 9-9 9"/>
+        </svg>
+      </button>
+    </div>
+    
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <h3 v-show="!collapsed" class="nav-section-title">Main</h3>
+        <router-link to="/" class="nav-item" :class="{ active: $route.path === '/' }">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9,22 9,12 15,12 15,22"/>
+          </svg>
+          <span v-show="!collapsed">Dashboard</span>
+        </router-link>
+        
+        <router-link to="/analytics" class="nav-item" :class="{ active: $route.path === '/analytics' }">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="20" x2="18" y2="10"/>
+            <line x1="12" y1="20" x2="12" y2="4"/>
+            <line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>
+          <span v-show="!collapsed">Analytics</span>
+        </router-link>
+        
+        <router-link to="/reports" class="nav-item" :class="{ active: $route.path === '/reports' }">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14,2 14,8 20,8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10,9 9,9 8,9"/>
+          </svg>
+          <span v-show="!collapsed">Reports</span>
+        </router-link>
+      </div>
+      
+      <div class="nav-section">
+        <h3 v-show="!collapsed" class="nav-section-title">Data</h3>
+        <router-link to="/upload" class="nav-item" :class="{ active: $route.path === '/upload' }">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17,8 12,3 7,8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <span v-show="!collapsed">Upload Data</span>
+        </router-link>
+      </div>
+    </nav>
+    
+    <div class="sidebar-footer">
+      <div class="quick-stats" v-show="!collapsed">
+        <div class="stat-item">
+          <span class="stat-value">24</span>
+          <span class="stat-label">Active Customers</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value">1.2M</span>
+          <span class="stat-label">Total Records</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+
+const collapsed = ref(false)
+
+const toggleCollapsed = () => {
+  collapsed.value = !collapsed.value
+}
 </script>
 
-<!-- src/router/index.ts -->
-import { createRouter, createWebHistory } from 'vue-router'
-import type { RouteRecordRaw } from 'vue-router'
-
-const routes: Array<RouteRecordRaw> = [
-  {
-    path: '/',
-    name: 'Home',
-    component: () => import('@/views/HomeView.vue')
-  },
-  {
-    path: '/upload',
-    name: 'Upload',
-    component: () => import('@/views/UploadView.vue')
-  },
-  {
-    path: '/analytics',
-    name: 'Analytics',
-    component: () => import('@/views/AnalyticsView.vue')
-  },
-  {
-    path: '/reports',
-    name: 'Reports',
-    component: () => import('@/views/ReportsView.vue')
+<style lang="scss" scoped>
+.app-sidebar {
+  width: 280px;
+  background: $background-card;
+  border-right: 1px solid $border-color;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s ease;
+  
+  &.sidebar-collapsed {
+    width: 80px;
   }
-]
+}
 
-const router = createRouter({
-  history: createWebHistory(),
-  routes
-})
+.sidebar-header {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 $spacing-lg;
+  border-bottom: 1px solid $border-color;
+  
+  .collapse-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    border-radius: $border-radius-sm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $text-secondary;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: $light-blue;
+      color: $primary-blue;
+    }
+    
+    svg {
+      width: 18px;
+      height: 18px;
+      transition: transform 0.3s ease;
+    }
+    
+    .sidebar-collapsed & svg {
+      transform: rotate(180deg);
+    }
+  }
+}
 
-export default router
+.sidebar-nav {
+  flex: 1;
+  padding: $spacing-lg 0;
+  overflow-y: auto;
+}
+
+.nav-section {
+  margin-bottom: $spacing-xl;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.nav-section-title {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  color: $text-light;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0 0 $spacing-md $spacing-lg;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-md $spacing-lg;
+  color: $text-secondary;
+  text-decoration: none;
+  font-weight: $font-weight-medium;
+  font-size: $font-size-sm;
+  transition: all 0.2s ease;
+  position: relative;
+  
+  svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+  
+  &:hover {
+    background: $light-blue;
+    color: $primary-blue;
+  }
+  
+  &.active {
+    background: $light-blue;
+    color: $primary-blue;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: $primary-blue;
+    }
+  }
+  
+  .sidebar-collapsed & {
+    justify-content: center;
+    padding: $spacing-md;
+    
+    span {
+      display: none;
+    }
+  }
+}
+
+.sidebar-footer {
+  border-top: 1px solid $border-color;
+  padding: $spacing-lg;
+}
+
+.quick-stats {
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: $spacing-md;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+    
+    .stat-value {
+      font-size: $font-size-lg;
+      font-weight: $font-weight-bold;
+      color: $primary-blue;
+    }
+    
+    .stat-label {
+      font-size: $font-size-xs;
+      color: $text-secondary;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .app-sidebar {
+    width: 80px;
+    
+    .nav-section-title {
+      display: none;
+    }
+    
+    .nav-item {
+      justify-content: center;
+      padding: $spacing-md;
+      
+      span {
+        display: none;
+      }
+    }
+    
+    .sidebar-footer {
+      display: none;
+    }
+  }
+}
+</style>
