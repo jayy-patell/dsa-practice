@@ -125,115 +125,82 @@ export function useFileUpload() {
   }
 }
 
-// src/stores/analytics.ts
+// src/stores/upload.ts
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import type { AnalyticsFilter, RateChangeMetrics, HospitalRateChange } from '@/types/analytics'
-import type { Hospital, Enterprise } from '@/types/hospital'
+import { ref } from 'vue'
 
-export const useAnalyticsStore = defineStore('analytics', () => {
-  // State
-  const hospitals = ref<Hospital[]>([])
-  const enterprises = ref<Enterprise[]>([])
-  const rateChanges = ref<HospitalRateChange[]>([])
-  const filters = ref<AnalyticsFilter>({})
-  const loading = ref(false)
+export interface UploadResult {
+  success: boolean
+  filename: string
+  file_type: string
+  processed_count?: number
+  total_rows?: number
+  errors?: string[]
+}
 
-  // Getters
-  const filteredRateChanges = computed(() => {
-    let filtered = rateChanges.value
+export const useUploadStore = defineStore('upload', () => {
+  const uploading = ref(false)
+  const results = ref<UploadResult[]>([])
+  const progress = ref(0)
 
-    if (filters.value.hospitalId) {
-      filtered = filtered.filter(rc => rc.customer_id === filters.value.hospitalId)
-    }
+  const uploadFile = async (file: File, endpoint: string): Promise<UploadResult | null> => {
+    uploading.value = true
+    progress.value = 0
 
-    if (filters.value.enterpriseId) {
-      filtered = filtered.filter(rc => rc.enterprise_id === filters.value.enterpriseId)
-    }
+    const formData = new FormData()
+    formData.append('file', file)
 
-    if (filters.value.startDate) {
-      filtered = filtered.filter(rc => 
-        new Date(rc.infusion_date_time) >= new Date(filters.value.startDate!)
-      )
-    }
-
-    if (filters.value.endDate) {
-      filtered = filtered.filter(rc => 
-        new Date(rc.infusion_date_time) <= new Date(filters.value.endDate!)
-      )
-    }
-
-    return filtered
-  })
-
-  const metrics = computed((): RateChangeMetrics => {
-    const data = filteredRateChanges.value
-    
-    return {
-      totalChanges: data.length,
-      averageIncrease: data.reduce((sum, rc) => sum + (rc.percentincrease || 0), 0) / data.length || 0,
-      maxIncrease: Math.max(...data.map(rc => rc.percentincrease || 0)),
-      infusionsUnder4Hours: data.filter(rc => (rc.total_elapsed_time || 0) < 240).length,
-      infusionsOver4Hours: data.filter(rc => (rc.total_elapsed_time || 0) >= 240).length,
-    }
-  })
-
-  // Actions
-  const fetchHospitals = async () => {
-    loading.value = true
     try {
-      const response = await fetch('/api/hospitals')
-      hospitals.value = await response.json()
+      const response = await fetch(`/api/upload/${endpoint}`, {
+        method: 'POST',
+        body: formData,
+      })
+
+      progress.value = 50
+
+      if (!response.ok) {
+        throw new Error(`Upload failed: ${response.statusText}`)
+      }
+
+      const result = await response.json()
+      results.value.push(result)
+      progress.value = 100
+
+      return result
+    } catch (error) {
+      console.error('Upload error:', error)
+      const errorResult: UploadResult = {
+        success: false,
+        filename: file.name,
+        file_type: endpoint,
+        errors: [error instanceof Error ? error.message : 'Unknown error']
+      }
+      results.value.push(errorResult)
+      return errorResult
     } finally {
-      loading.value = false
+      uploading.value = false
+      setTimeout(() => {
+        progress.value = 0
+      }, 2000)
     }
   }
 
-  const fetchEnterprises = async () => {
-    loading.value = true
-    try {
-      const response = await fetch('/api/enterprises')
-      enterprises.value = await response.json()
-    } finally {
-      loading.value = false
-    }
+  const reset = () => {
+    progress.value = 0
+    results.value = []
+    uploading.value = false
   }
 
-  const fetchRateChanges = async () => {
-    loading.value = true
-    try {
-      const query = new URLSearchParams()
-      if (filters.value.hospitalId) query.append('hospital_id', filters.value.hospitalId.toString())
-      if (filters.value.enterpriseId) query.append('enterprise_id', filters.value.enterpriseId.toString())
-      if (filters.value.startDate) query.append('start_date', filters.value.startDate)
-      if (filters.value.endDate) query.append('end_date', filters.value.endDate)
-
-      const response = await fetch(`/api/analytics/rate-changes?${query}`)
-      rateChanges.value = await response.json()
-    } finally {
-      loading.value = false
-    }
-  }
-
-  const updateFilters = (newFilters: Partial<AnalyticsFilter>) => {
-    filters.value = { ...filters.value, ...newFilters }
-    fetchRateChanges()
+  const clearResults = () => {
+    results.value = []
   }
 
   return {
-    // State
-    hospitals,
-    enterprises,
-    rateChanges,
-    filters,
-    loading,
-    // Getters
-    filteredRateChanges,
-    metrics,
-    // Actions
-    fetchHospitals,
-    fetchEnterprises,
-    fetchRateChanges,
-    updateFilters
+    uploading,
+    results,
+    progress,
+    uploadFile,
+    reset,
+    clearResults
   }
 })
