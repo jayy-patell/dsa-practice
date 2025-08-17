@@ -1,0 +1,206 @@
+// src/styles/variables.scss
+// Power BI inspired color scheme
+$primary-blue: #0078d4;
+$secondary-blue: #106ebe;
+$light-blue: #deecf9;
+$dark-blue: #004578;
+
+$accent-orange: #ff8c00;
+$accent-green: #107c10;
+$accent-red: #d83b01;
+$accent-purple: #5c2d91;
+
+$background-primary: #f3f2f1;
+$background-secondary: #ffffff;
+$background-card: #ffffff;
+
+$text-primary: #323130;
+$text-secondary: #605e5c;
+$text-light: #8a8886;
+
+$border-color: #edebe9;
+$border-hover: #c8c6c4;
+
+$shadow-light: 0 1px 2px rgba(0, 0, 0, 0.1);
+$shadow-medium: 0 2px 8px rgba(0, 0, 0, 0.1);
+$shadow-heavy: 0 4px 16px rgba(0, 0, 0, 0.15);
+
+// Spacing
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+$spacing-xxl: 48px;
+
+// Border radius
+$border-radius-sm: 4px;
+$border-radius-md: 8px;
+$border-radius-lg: 12px;
+
+// Typography
+$font-size-xs: 12px;
+$font-size-sm: 14px;
+$font-size-md: 16px;
+$font-size-lg: 18px;
+$font-size-xl: 24px;
+$font-size-xxl: 32px;
+
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+// src/styles/global.scss
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: $background-primary;
+  color: $text-primary;
+  line-height: 1.5;
+}
+
+// Power BI style cards
+.card {
+  background: $background-card;
+  border-radius: $border-radius-md;
+  box-shadow: $shadow-light;
+  border: 1px solid $border-color;
+  overflow: hidden;
+  
+  &:hover {
+    box-shadow: $shadow-medium;
+  }
+  
+  &__header {
+    padding: $spacing-md;
+    border-bottom: 1px solid $border-color;
+    background: lighten($background-primary, 2%);
+  }
+  
+  &__content {
+    padding: $spacing-md;
+  }
+  
+  &__title {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+    color: $text-primary;
+    margin-bottom: $spacing-sm;
+  }
+  
+  &__subtitle {
+    font-size: $font-size-sm;
+    color: $text-secondary;
+  }
+}
+
+// Metrics cards like Power BI
+.metric-card {
+  background: linear-gradient(135deg, $primary-blue 0%, $secondary-blue 100%);
+  color: white;
+  padding: $spacing-lg;
+  border-radius: $border-radius-md;
+  box-shadow: $shadow-medium;
+  text-align: center;
+  
+  &__value {
+    font-size: $font-size-xxl;
+    font-weight: $font-weight-bold;
+    margin-bottom: $spacing-sm;
+  }
+  
+  &__label {
+    font-size: $font-size-sm;
+    opacity: 0.9;
+  }
+  
+  &--orange {
+    background: linear-gradient(135deg, $accent-orange 0%, darken($accent-orange, 10%) 100%);
+  }
+  
+  &--green {
+    background: linear-gradient(135deg, $accent-green 0%, darken($accent-green, 10%) 100%);
+  }
+  
+  &--purple {
+    background: linear-gradient(135deg, $accent-purple 0%, darken($accent-purple, 10%) 100%);
+  }
+  
+  &--red {
+    background: linear-gradient(135deg, $accent-red 0%, darken($accent-red, 10%) 100%);
+  }
+}
+
+// Form controls
+.form-control {
+  width: 100%;
+  padding: $spacing-sm $spacing-md;
+  border: 1px solid $border-color;
+  border-radius: $border-radius-sm;
+  font-size: $font-size-sm;
+  color: $text-primary;
+  background: $background-secondary;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  
+  &:focus {
+    outline: none;
+    border-color: $primary-blue;
+    box-shadow: 0 0 0 2px rgba($primary-blue, 0.2);
+  }
+  
+  &:hover:not(:focus) {
+    border-color: $border-hover;
+  }
+}
+
+.form-label {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $text-primary;
+  margin-bottom: $spacing-xs;
+  display: block;
+}
+
+// Buttons
+.btn {
+  padding: $spacing-sm $spacing-md;
+  border: none;
+  border-radius: $border-radius-sm;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-xs;
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  &--primary {
+    background: $primary-blue;
+    color: white;
+    
+    &:hover:not(:disabled) {
+      background: $secondary-blue;
+    }
+  }
+  
+  &--secondary {
+    background: transparent;
+    color: $primary-blue;
+    border: 1px solid $primary-blue;
+    
+    &:hover:not(:disabled) {
+      background: $light-blue;
+    }
+  }
+}
